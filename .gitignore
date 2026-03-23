@@ -1,0 +1,5 @@
+# Only deploy ONNX model (used by the PWA)
+model/model.tflite
+model/model_uint8.tflite
+generate_icons.py
+.DS_Store

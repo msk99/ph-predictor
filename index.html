@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#2E5090">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>pH Predictor</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="header">
+    <h1>pH Predictor</h1>
+    <p>AI-powered pH prediction from indicator strips</p>
+  </div>
+
+  <div class="container">
+
+    <!-- Model Status -->
+    <div class="status-bar">
+      <div class="status-dot loading" id="statusDot"></div>
+      <div>
+        <div class="status-text" id="statusText">Loading model...</div>
+        <div class="progress-container" id="progressContainer">
+          <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+          </div>
+          <div class="progress-text" id="progressText">0%</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Input Buttons -->
+    <div class="input-section">
+      <div class="input-buttons">
+        <button class="btn btn-camera" id="btnCamera" disabled>
+          <span class="btn-icon">&#128247;</span> Camera
+        </button>
+        <button class="btn btn-upload" id="btnUpload" disabled>
+          <span class="btn-icon">&#128193;</span> Upload
+        </button>
+      </div>
+
+      <!-- Hidden file inputs -->
+      <input type="file" id="cameraInput" accept="image/*" capture="environment">
+      <input type="file" id="fileInput" accept="image/*,.heic,.heif">
+
+      <!-- Preview area -->
+      <div class="preview-area" id="previewArea">
+        <div class="preview-images">
+          <div class="preview-box">
+            <img id="previewOriginal" alt="Original">
+            <div class="preview-label">Original</div>
+          </div>
+          <div class="preview-box">
+            <img id="previewCropped" alt="Cropped">
+            <div class="preview-label">Auto-cropped</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading spinner -->
+      <div class="spinner" id="spinner">
+        <div class="spinner-circle"></div>
+        <div class="spinner-text">Analysing strip...</div>
+      </div>
+    </div>
+
+    <!-- Result -->
+    <div class="result-section" id="resultSection">
+      <div class="result-label">Predicted pH</div>
+      <div>
+        <span class="result-value" id="resultValue">-</span>
+        <span class="result-unit">pH</span>
+      </div>
+      <div class="ph-bar">
+        <div class="ph-marker" id="phMarker" style="left: 50%"></div>
+      </div>
+      <div class="result-time" id="resultTime"></div>
+    </div>
+
+    <!-- Info -->
+    <div class="info">
+      <h3>How to use</h3>
+      <ul>
+        <li>Take a photo of your pH indicator strip (with the reference colour chart visible)</li>
+        <li>The AI auto-crops to the strip region and predicts pH</li>
+        <li>Works offline after first load (model cached locally)</li>
+        <li>pH range: 5 - 10 | Accuracy: ~0.28 pH units (MAE)</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <!-- ONNX Runtime Web — robust WASM-based inference in all browsers -->
+  <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.17.0/dist/ort.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
