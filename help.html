@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#2E5090">
+  <title>pH Predictor - Help</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .help-container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .help-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+
+    .help-card h2 {
+      font-size: 18px;
+      color: #2E5090;
+      margin-bottom: 12px;
+      border-bottom: 2px solid #e8edf4;
+      padding-bottom: 8px;
+    }
+
+    .help-card h3 {
+      font-size: 15px;
+      color: #333;
+      margin: 14px 0 6px;
+    }
+
+    .help-card p {
+      font-size: 14px;
+      color: #555;
+      line-height: 1.6;
+      margin-bottom: 10px;
+    }
+
+    .help-card ul, .help-card ol {
+      padding-left: 20px;
+      margin-bottom: 10px;
+    }
+
+    .help-card li {
+      font-size: 14px;
+      color: #555;
+      line-height: 1.6;
+      margin-bottom: 6px;
+    }
+
+    .help-card strong {
+      color: #333;
+    }
+
+    .example-img-container {
+      text-align: center;
+      margin: 16px 0;
+    }
+
+    .example-img-container img {
+      max-width: 100%;
+      max-height: 350px;
+      border-radius: 8px;
+      border: 2px solid #e0e0e0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .example-caption {
+      font-size: 12px;
+      color: #888;
+      margin-top: 8px;
+      font-style: italic;
+    }
+
+    .kit-diagram {
+      display: flex;
+      gap: 12px;
+      margin: 12px 0;
+      flex-wrap: wrap;
+    }
+
+    .kit-item {
+      flex: 1;
+      min-width: 130px;
+      background: #f5f7fa;
+      border-radius: 8px;
+      padding: 12px;
+      text-align: center;
+    }
+
+    .kit-item .kit-icon {
+      font-size: 32px;
+      margin-bottom: 6px;
+    }
+
+    .kit-item .kit-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #2E5090;
+    }
+
+    .kit-item .kit-desc {
+      font-size: 12px;
+      color: #888;
+      margin-top: 4px;
+    }
+
+    .step-number {
+      display: inline-block;
+      width: 24px;
+      height: 24px;
+      background: #2E5090;
+      color: white;
+      border-radius: 50%;
+      text-align: center;
+      line-height: 24px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-right: 8px;
+      flex-shrink: 0;
+    }
+
+    .step-row {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 10px;
+    }
+
+    .step-text {
+      font-size: 14px;
+      color: #555;
+      line-height: 1.6;
+    }
+
+    .spec-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10px 0;
+      font-size: 13px;
+    }
+
+    .spec-table th {
+      background: #2E5090;
+      color: white;
+      padding: 8px 12px;
+      text-align: left;
+      font-weight: 600;
+    }
+
+    .spec-table td {
+      padding: 8px 12px;
+      border-bottom: 1px solid #e8edf4;
+      color: #555;
+    }
+
+    .spec-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 20px;
+      background: #2E5090;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      margin-bottom: 16px;
+    }
+
+    .back-btn:hover {
+      background: #1a3a6e;
+    }
+
+    .highlight-box {
+      background: #e8f5e9;
+      border-left: 4px solid #4CAF50;
+      border-radius: 4px;
+      padding: 12px 14px;
+      margin: 12px 0;
+    }
+
+    .highlight-box p {
+      color: #2e7d32;
+      margin: 0;
+      font-size: 13px;
+    }
+
+    .warning-box {
+      background: #fff3e0;
+      border-left: 4px solid #FF9800;
+      border-radius: 4px;
+      padding: 12px 14px;
+      margin: 12px 0;
+    }
+
+    .warning-box p {
+      color: #e65100;
+      margin: 0;
+      font-size: 13px;
+    }
+
+    .photo-guide {
+      display: flex;
+      gap: 10px;
+      margin: 12px 0;
+    }
+
+    .photo-do, .photo-dont {
+      flex: 1;
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 13px;
+    }
+
+    .photo-do {
+      background: #e8f5e9;
+      border: 1px solid #c8e6c9;
+    }
+
+    .photo-do .photo-title {
+      color: #2e7d32;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .photo-dont {
+      background: #fce4ec;
+      border: 1px solid #f8bbd0;
+    }
+
+    .photo-dont .photo-title {
+      color: #c62828;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .photo-do li, .photo-dont li {
+      font-size: 12px;
+      color: #555;
+      margin-bottom: 3px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>pH Predictor</h1>
+    <p>Help & Instructions</p>
+  </div>
+
+  <div class="help-container">
+
+    <a href="index.html" class="back-btn">&larr; Back to App</a>
+
+    <!-- BACKGROUND -->
+    <div class="help-card">
+      <h2>Background</h2>
+      <p>
+        Colorimetric test strips provide a low-cost, rapid method for estimating pH
+        and various metabolites in veterinary and agricultural applications, including
+        milk quality assessment and reproductive health monitoring in buffalo. However,
+        traditional visual comparison of strip colour to reference charts is subjective
+        and prone to error due to variations in human colour perception, ambient lighting,
+        and individual interpretation.
+      </p>
+      <p>
+        This app uses a deep learning model to automate pH estimation from test strip
+        images, providing objective, reproducible, and quantitative results. The approach
+        serves as a proof-of-concept workflow that can be readily extended to other
+        colorimetric assays for metabolites such as progesterone, glucose, urea, and ketones.
+      </p>
+    </div>
+
+    <!-- THE pH KIT -->
+    <div class="help-card">
+      <h2>The pH Test Kit</h2>
+      <p>The pH test kit consists of three components:</p>
+
+      <div class="kit-diagram">
+        <div class="kit-item">
+          <div class="kit-icon">&#128207;</div>
+          <div class="kit-label">Reference Strip</div>
+          <div class="kit-desc">Multi-colour chart (pH 5&ndash;10) for visual comparison and camera/lighting normalisation</div>
+        </div>
+        <div class="kit-item">
+          <div class="kit-icon">&#9634;</div>
+          <div class="kit-label">Test Strips (n=100)</div>
+          <div class="kit-desc">Pre-treated single-pad indicators that change colour when dipped in the sample</div>
+        </div>
+      </div>
+
+      <h3>Steps to Use the Kit</h3>
+      <div class="step-row"><span class="step-number">1</span><span class="step-text">Take a fresh pre-treated test strip from the kit.</span></div>
+      <div class="step-row"><span class="step-number">2</span><span class="step-text">Dip the test strip into the sample solution (e.g., milk, buffer, water) for 1&ndash;2 seconds.</span></div>
+      <div class="step-row"><span class="step-number">3</span><span class="step-text">Remove the strip and wait 30&ndash;60 seconds for the colour to stabilise.</span></div>
+      <div class="step-row"><span class="step-number">4</span><span class="step-text">Place the test strip alongside the reference strip on a flat, plain-coloured surface.</span></div>
+      <div class="step-row"><span class="step-number">5</span><span class="step-text">Take a photo with this app (see photography guide below).</span></div>
+      <div class="step-row"><span class="step-number">6</span><span class="step-text">The app automatically crops, preprocesses, and predicts the pH value.</span></div>
+    </div>
+
+    <!-- PHOTOGRAPHY GUIDE -->
+    <div class="help-card">
+      <h2>How to Take the Photo</h2>
+      <p>
+        For accurate predictions, the image should contain <strong>both the test strip and
+        the reference colour strip</strong> placed side by side. The reference strip helps the
+        model normalise for different cameras and lighting conditions.
+      </p>
+
+      <div class="example-img-container">
+        <img src="example_pH7.jpg" alt="Example image: pH 7 test strip with reference strip">
+        <div class="example-caption">
+          Example image (pH 7): Reference colour strip (top) and test strip (bottom) on a plain background.
+        </div>
+      </div>
+
+      <h3>Image Layout</h3>
+      <p>Place both strips parallel to each other on a flat, light-coloured surface:</p>
+      <ul>
+        <li><strong>Reference strip</strong> &mdash; the multi-colour chart with pads ranging from green (pH 5) to blue/purple (pH 10)</li>
+        <li><strong>Test strip</strong> &mdash; the single-colour pad that reacted with your sample</li>
+        <li>Both strips should be clearly visible and in focus</li>
+        <li>Leave some margin around the strips (the app auto-crops)</li>
+      </ul>
+
+      <div class="photo-guide">
+        <div class="photo-do">
+          <div class="photo-title">&#10003; Do</div>
+          <ul>
+            <li>Plain, light background (white/grey)</li>
+            <li>Even, diffuse lighting</li>
+            <li>Both strips in frame</li>
+            <li>Camera held steady, in focus</li>
+            <li>Strips centred in the image</li>
+          </ul>
+        </div>
+        <div class="photo-dont">
+          <div class="photo-title">&#10007; Avoid</div>
+          <ul>
+            <li>Colourful or patterned background</li>
+            <li>Harsh shadows across strips</li>
+            <li>Other colourful objects in frame</li>
+            <li>Blurry or out-of-focus images</li>
+            <li>Strips at extreme angles</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="highlight-box">
+        <p><strong>Tip:</strong> After taking the photo, check the &ldquo;Auto-cropped&rdquo; preview. If the crop
+        correctly captures both strips, the prediction will be accurate. If extra objects are included,
+        try retaking with a cleaner background.</p>
+      </div>
+    </div>
+
+    <!-- THE AI MODEL -->
+    <div class="help-card">
+      <h2>About the AI Model</h2>
+      <p>
+        The prediction model is based on <strong>Xception</strong>, a deep convolutional neural network
+        originally trained on over 1 million images (ImageNet). It was fine-tuned specifically for pH
+        prediction using transfer learning on 540 images of pH indicator strips captured under various
+        conditions (indoor light, sunlight/shade, 3 cameras, 3 replicates, pH 5&ndash;10).
+      </p>
+
+      <h3>Model Performance</h3>
+      <table class="spec-table">
+        <tr>
+          <th>Metric</th>
+          <th>Test Set (unseen strips)</th>
+        </tr>
+        <tr>
+          <td>Mean Absolute Error (MAE)</td>
+          <td><strong>0.283 pH units</strong></td>
+        </tr>
+        <tr>
+          <td>R&sup2; (coefficient of determination)</td>
+          <td><strong>0.953</strong></td>
+        </tr>
+        <tr>
+          <td>Pearson correlation (r)</td>
+          <td><strong>0.977</strong></td>
+        </tr>
+        <tr>
+          <td>pH range</td>
+          <td>5 &ndash; 10</td>
+        </tr>
+        <tr>
+          <td>Model format</td>
+          <td>ONNX (80.5 MB, cached locally)</td>
+        </tr>
+        <tr>
+          <td>Inference time</td>
+          <td>~1&ndash;2 seconds (mobile)</td>
+        </tr>
+      </table>
+
+      <div class="warning-box">
+        <p><strong>Note:</strong> The model was trained on pH values 5&ndash;10 (integer steps). Predictions
+        outside this range may be unreliable. The model provides continuous (decimal) predictions but
+        accuracy is highest near the trained pH levels.</p>
+      </div>
+
+      <h3>How It Works</h3>
+      <div class="step-row"><span class="step-number">1</span><span class="step-text"><strong>Auto-crop:</strong> The app detects the coloured strip region using colour saturation analysis and crops the image to isolate both strips.</span></div>
+      <div class="step-row"><span class="step-number">2</span><span class="step-text"><strong>Resize:</strong> The cropped image is resized to 224&times;224 pixels (the model's input size).</span></div>
+      <div class="step-row"><span class="step-number">3</span><span class="step-text"><strong>Preprocess:</strong> Pixel values are scaled to the range [&minus;1, 1] to match the model's training conditions.</span></div>
+      <div class="step-row"><span class="step-number">4</span><span class="step-text"><strong>Predict:</strong> The Xception neural network processes the image and outputs a continuous pH value.</span></div>
+
+      <p>
+        The reference colour strip in the image serves as an internal standard, helping the model
+        account for differences in camera sensors, white balance, and ambient lighting &mdash; making
+        predictions robust across different devices and environments.
+      </p>
+    </div>
+
+    <!-- OFFLINE & PRIVACY -->
+    <div class="help-card">
+      <h2>Privacy & Offline Use</h2>
+      <p>
+        <strong>All processing happens on your device.</strong> No images are uploaded to any server.
+        The AI model runs entirely in your browser using WebAssembly. After the initial model download
+        (~81 MB on first visit), the app works fully offline &mdash; no internet connection needed.
+      </p>
+      <p>
+        Your photos never leave your device. There is no user tracking, no analytics, and no data collection.
+      </p>
+    </div>
+
+    <!-- LIMITATIONS -->
+    <div class="help-card">
+      <h2>Limitations</h2>
+      <ul>
+        <li>Trained on pH 5&ndash;10 only; predictions outside this range are extrapolations</li>
+        <li>Accuracy depends on image quality and correct auto-cropping</li>
+        <li>The model expects the specific indicator dye used during training; different indicator chemistries may give unreliable results</li>
+        <li>This is a research proof-of-concept &mdash; not a certified diagnostic tool</li>
+        <li>First visit requires ~81 MB download (cached for future offline use)</li>
+      </ul>
+    </div>
+
+    <!-- CREDITS -->
+    <div class="help-card">
+      <h2>Credits</h2>
+      <p>
+        Developed by Dr Mehar Khatkar (Adelaide University) and Dr Ashok Balhara and ICAR-CIRB Team.
+      </p>
+      <p>
+        Model: Xception (Chollet, 2017) with transfer learning, trained on pH indicator strip images.
+        Web deployment using ONNX Runtime Web (WebAssembly).
+      </p>
+    </div>
+
+    <a href="index.html" class="back-btn">&larr; Back to App</a>
+
+  </div>
+
+</body>
+</html>
