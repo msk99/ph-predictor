@@ -308,6 +308,7 @@
       <div class="step-row"><span class="step-number">4</span><span class="step-text">Place the test strip alongside the reference strip on a flat, plain-coloured surface.</span></div>
       <div class="step-row"><span class="step-number">5</span><span class="step-text">Take a photo with this app (see photography guide below).</span></div>
       <div class="step-row"><span class="step-number">6</span><span class="step-text">The app automatically crops, preprocesses, and predicts the pH value.</span></div>
+      <div class="step-row"><span class="step-number">7</span><span class="step-text">If the auto-crop missed the strip, tap <strong>Adjust crop</strong> to fine-tune the region manually (see below).</span></div>
     </div>
 
     <!-- PHOTOGRAPHY GUIDE -->
@@ -360,8 +361,41 @@
 
       <div class="highlight-box">
         <p><strong>Tip:</strong> After taking the photo, check the &ldquo;Auto-cropped&rdquo; preview. If the crop
-        correctly captures both strips, the prediction will be accurate. If extra objects are included,
-        try retaking with a cleaner background.</p>
+        correctly captures both strips, the prediction will be accurate. If it doesn&rsquo;t, use
+        <strong>Adjust crop</strong> to correct the region by hand &mdash; no need to retake the photo.</p>
+      </div>
+    </div>
+
+    <!-- MANUAL ADJUST CROP -->
+    <div class="help-card">
+      <h2>Adjust Crop (Manual Fine-Tuning)</h2>
+      <p>
+        The auto-crop works well on clean photos, but can miss the strip when lighting is very flat,
+        when the background contains saturated colours (a bright tabletop, hands in frame, etc.), or
+        when the strip sits near the bottom edge of the image. In those cases, use the <strong>Adjust
+        crop</strong> button that appears under the preview after a prediction.
+      </p>
+
+      <h3>What You Can Do</h3>
+      <ul>
+        <li><strong>Drag</strong> the blue rectangle to move it over the strips.</li>
+        <li><strong>Pinch</strong> with two fingers to zoom in or out (mobile).</li>
+        <li><strong>Drag the corner handles</strong> to resize the box.</li>
+        <li><strong>Mouse wheel</strong> over the box to zoom (desktop) &mdash; zooms around the cursor.</li>
+        <li><strong>Tap outside</strong> the box to jump the box to that point.</li>
+      </ul>
+
+      <h3>Buttons</h3>
+      <ul>
+        <li><strong>Reset</strong> &mdash; restore the original auto-detected box.</li>
+        <li><strong>Cancel</strong> &mdash; close the editor without changing the prediction.</li>
+        <li><strong>Use this crop</strong> &mdash; re-run the AI on your chosen region; the pH result updates and is labelled <em>manual crop</em>.</li>
+      </ul>
+
+      <div class="highlight-box">
+        <p><strong>Best practice:</strong> include <em>both</em> the reference colour chart and the test
+        strip inside the box, with a small margin around them. The model uses the reference chart to
+        normalise for lighting, so cropping it out reduces accuracy.</p>
       </div>
     </div>
 
@@ -415,9 +449,10 @@
 
       <h3>How It Works</h3>
       <div class="step-row"><span class="step-number">1</span><span class="step-text"><strong>Auto-crop:</strong> The app detects the coloured strip region using colour saturation analysis and crops the image to isolate both strips.</span></div>
-      <div class="step-row"><span class="step-number">2</span><span class="step-text"><strong>Resize:</strong> The cropped image is resized to 224&times;224 pixels (the model's input size).</span></div>
-      <div class="step-row"><span class="step-number">3</span><span class="step-text"><strong>Preprocess:</strong> Pixel values are scaled to the range [&minus;1, 1] to match the model's training conditions.</span></div>
-      <div class="step-row"><span class="step-number">4</span><span class="step-text"><strong>Predict:</strong> The Xception neural network processes the image and outputs a continuous pH value.</span></div>
+      <div class="step-row"><span class="step-number">2</span><span class="step-text"><strong>Manual adjust (optional):</strong> Tap <strong>Adjust crop</strong> to move, pinch-zoom, or resize the crop box if the auto-crop missed the strip.</span></div>
+      <div class="step-row"><span class="step-number">3</span><span class="step-text"><strong>Resize:</strong> The cropped image is resized to 224&times;224 pixels (the model's input size).</span></div>
+      <div class="step-row"><span class="step-number">4</span><span class="step-text"><strong>Preprocess:</strong> Pixel values are scaled to the range [&minus;1, 1] to match the model's training conditions.</span></div>
+      <div class="step-row"><span class="step-number">5</span><span class="step-text"><strong>Predict:</strong> The Xception neural network processes the image and outputs a continuous pH value.</span></div>
 
       <p>
         The reference colour strip in the image serves as an internal standard, helping the model
