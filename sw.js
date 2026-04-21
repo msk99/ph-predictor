@@ -1,5 +1,5 @@
 // Service Worker for pH Predictor PWA
-const CACHE_NAME = 'ph-predictor-v3';
+const CACHE_NAME = 'ph-predictor-v4';
 const MODEL_CACHE = 'ph-model-v1';
 
 // App shell files (cached immediately on install)

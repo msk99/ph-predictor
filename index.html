@@ -59,8 +59,30 @@
           </div>
           <div class="preview-box">
             <img id="previewCropped" alt="Cropped">
-            <div class="preview-label">Auto-cropped</div>
+            <div class="preview-label" id="previewCroppedLabel">Auto-cropped</div>
           </div>
+        </div>
+        <button class="btn btn-adjust" id="btnAdjust" style="display:none">
+          <span class="btn-icon">&#9998;</span> Adjust crop
+        </button>
+      </div>
+
+      <!-- Manual crop editor -->
+      <div class="crop-editor" id="cropEditor" hidden>
+        <div class="crop-hint">Drag the box to move, pinch or use the handles to zoom.</div>
+        <div class="crop-stage" id="cropStage">
+          <canvas id="cropCanvas"></canvas>
+          <div class="crop-box" id="cropBox">
+            <span class="handle nw" data-handle="nw"></span>
+            <span class="handle ne" data-handle="ne"></span>
+            <span class="handle sw" data-handle="sw"></span>
+            <span class="handle se" data-handle="se"></span>
+          </div>
+        </div>
+        <div class="crop-actions">
+          <button id="btnCropReset">Reset</button>
+          <button id="btnCropCancel">Cancel</button>
+          <button id="btnCropConfirm" class="primary">Use this crop</button>
         </div>
       </div>
 

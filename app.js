@@ -33,6 +33,15 @@ const resultSection = document.getElementById('resultSection');
 const resultValue = document.getElementById('resultValue');
 const phMarker = document.getElementById('phMarker');
 const resultTime = document.getElementById('resultTime');
+const previewCroppedLabel = document.getElementById('previewCroppedLabel');
+const btnAdjust = document.getElementById('btnAdjust');
+const cropEditor = document.getElementById('cropEditor');
+const cropStage = document.getElementById('cropStage');
+const cropCanvas = document.getElementById('cropCanvas');
+const cropBoxEl = document.getElementById('cropBox');
+const btnCropReset = document.getElementById('btnCropReset');
+const btnCropCancel = document.getElementById('btnCropCancel');
+const btnCropConfirm = document.getElementById('btnCropConfirm');
 
 // ---- Model Loading ----
 async function loadModel() {
@@ -267,7 +276,7 @@ function autoCropStrips(canvas) {
     }
   }
 
-  if (!bestLabel) return canvas;
+  if (!bestLabel) return { canvas, box: { x: 0, y: 0, w, h } };
 
   // Use bounding box from the selected component
   let rmin = components[bestLabel].rmin;
@@ -290,7 +299,7 @@ function autoCropStrips(canvas) {
     }
   }
 
-  if (rmax <= rmin || cmax <= cmin) return canvas;
+  if (rmax <= rmin || cmax <= cmin) return { canvas, box: { x: 0, y: 0, w, h } };
 
   // Scale to original coords
   rmin = Math.floor(rmin / scale);
@@ -310,7 +319,19 @@ function autoCropStrips(canvas) {
   cropCanvas.width = cropW;
   cropCanvas.height = cropH;
   cropCanvas.getContext('2d').drawImage(canvas, cmin, rmin, cropW, cropH, 0, 0, cropW, cropH);
-  return cropCanvas;
+  return { canvas: cropCanvas, box: { x: cmin, y: rmin, w: cropW, h: cropH } };
+}
+
+function cropFromBox(sourceCanvas, box) {
+  const c = document.createElement('canvas');
+  c.width = Math.max(1, Math.round(box.w));
+  c.height = Math.max(1, Math.round(box.h));
+  c.getContext('2d').drawImage(
+    sourceCanvas,
+    Math.round(box.x), Math.round(box.y), Math.round(box.w), Math.round(box.h),
+    0, 0, c.width, c.height
+  );
+  return c;
 }
 
 // ---- Preprocessing for Xception ----
@@ -351,29 +372,22 @@ async function runInference(inputData) {
 
 // ---- Main Prediction Pipeline ----
 
-async function predictFromImage(imgElement) {
+// Shared state so the crop editor can re-crop without re-loading the image
+const cropState = {
+  sourceCanvas: null,
+  autoBox: null,
+  currentBox: null,
+};
+
+async function runFromCroppedCanvas(cropped, label) {
   const startTime = performance.now();
-
-  // Draw to canvas
-  const canvas = document.createElement('canvas');
-  canvas.width = imgElement.naturalWidth || imgElement.width;
-  canvas.height = imgElement.naturalHeight || imgElement.height;
-  canvas.getContext('2d').drawImage(imgElement, 0, 0);
-
-  // Show original
-  previewOriginal.src = canvas.toDataURL('image/jpeg', 0.8);
-
-  // Auto-crop
-  const cropped = autoCropStrips(canvas);
   previewCropped.src = cropped.toDataURL('image/jpeg', 0.8);
   previewArea.style.display = 'block';
 
-  // Preprocess & predict
   const inputData = preprocessForXception(cropped);
   const pH = await runInference(inputData);
   const elapsed = performance.now() - startTime;
 
-  // Display
   resultValue.textContent = pH.toFixed(2);
   resultSection.style.display = 'block';
 
@@ -381,7 +395,24 @@ async function predictFromImage(imgElement) {
   const markerPos = ((phClamped - (PH_MIN - 1)) / (PH_MAX - PH_MIN + 2)) * 100;
   phMarker.style.left = markerPos + '%';
 
-  resultTime.textContent = `Inference: ${elapsed.toFixed(0)} ms`;
+  resultTime.textContent = `Inference: ${elapsed.toFixed(0)} ms${label ? ' \u2014 ' + label : ''}`;
+}
+
+async function predictFromImage(imgElement) {
+  const canvas = document.createElement('canvas');
+  canvas.width = imgElement.naturalWidth || imgElement.width;
+  canvas.height = imgElement.naturalHeight || imgElement.height;
+  canvas.getContext('2d').drawImage(imgElement, 0, 0);
+
+  previewOriginal.src = canvas.toDataURL('image/jpeg', 0.8);
+
+  const { canvas: cropped, box } = autoCropStrips(canvas);
+  cropState.sourceCanvas = canvas;
+  cropState.autoBox = box;
+  cropState.currentBox = { ...box };
+
+  btnAdjust.style.display = 'inline-flex';
+  await runFromCroppedCanvas(cropped, 'auto');
 }
 
 // ---- Event Handlers ----
@@ -392,6 +423,9 @@ function handleImageSelect(file) {
   spinner.style.display = 'block';
   resultSection.style.display = 'none';
   previewArea.style.display = 'none';
+  cropEditor.hidden = true;
+  btnAdjust.style.display = 'none';
+  previewCroppedLabel.textContent = 'Auto-cropped';
 
   const img = new Image();
   img.onload = async () => {
@@ -421,6 +455,237 @@ cameraInput.addEventListener('change', e => {
 fileInput.addEventListener('change', e => {
   handleImageSelect(e.target.files[0]);
   e.target.value = '';
+});
+
+// ---- Manual Crop Editor ----
+
+const editorState = {
+  box: null,        // {x,y,w,h} in source-canvas pixels
+  stageW: 0,        // displayed stage width in CSS pixels
+  stageH: 0,        // displayed stage height in CSS pixels
+  scale: 1,         // source px per stage px
+  pointers: new Map(), // pointerId -> {x,y} in source px
+  drag: null,       // { type: 'move'|'nw'|'ne'|'sw'|'se', startBox, startPt }
+  pinch: null,      // { startBox, startDist, centerPx } for 2-finger pinch
+};
+
+const MIN_BOX = 40; // minimum box size in source px
+
+function clampBox(b, sw, sh) {
+  const w = Math.max(MIN_BOX, Math.min(b.w, sw));
+  const h = Math.max(MIN_BOX, Math.min(b.h, sh));
+  const x = Math.max(0, Math.min(b.x, sw - w));
+  const y = Math.max(0, Math.min(b.y, sh - h));
+  return { x, y, w, h };
+}
+
+function layoutStage() {
+  const src = cropState.sourceCanvas;
+  if (!src) return;
+  // Fit source image into the available container width, preserving aspect ratio.
+  const containerW = cropEditor.clientWidth - 32; // minus padding
+  const maxH = Math.min(window.innerHeight * 0.6, 520);
+  const aspect = src.height / src.width;
+  let stageW = containerW;
+  let stageH = stageW * aspect;
+  if (stageH > maxH) {
+    stageH = maxH;
+    stageW = stageH / aspect;
+  }
+  editorState.stageW = stageW;
+  editorState.stageH = stageH;
+  editorState.scale = src.width / stageW; // source px per stage px
+  cropStage.style.width = stageW + 'px';
+  cropStage.style.height = stageH + 'px';
+  cropCanvas.width = src.width;
+  cropCanvas.height = src.height;
+  cropCanvas.getContext('2d').drawImage(src, 0, 0);
+  cropCanvas.style.width = stageW + 'px';
+  cropCanvas.style.height = stageH + 'px';
+  drawBox();
+}
+
+function drawBox() {
+  const b = editorState.box;
+  if (!b) return;
+  const s = editorState.scale;
+  cropBoxEl.style.left = (b.x / s) + 'px';
+  cropBoxEl.style.top = (b.y / s) + 'px';
+  cropBoxEl.style.width = (b.w / s) + 'px';
+  cropBoxEl.style.height = (b.h / s) + 'px';
+}
+
+function clientToSource(evt) {
+  const rect = cropStage.getBoundingClientRect();
+  const sx = (evt.clientX - rect.left) * editorState.scale;
+  const sy = (evt.clientY - rect.top) * editorState.scale;
+  return { x: sx, y: sy };
+}
+
+function openCropEditor() {
+  if (!cropState.sourceCanvas) return;
+  editorState.box = clampBox(
+    { ...cropState.currentBox },
+    cropState.sourceCanvas.width,
+    cropState.sourceCanvas.height
+  );
+  cropEditor.hidden = false;
+  btnAdjust.style.display = 'none';
+  // Layout after the editor is visible so clientWidth is correct
+  requestAnimationFrame(layoutStage);
+}
+
+function closeCropEditor() {
+  cropEditor.hidden = true;
+  btnAdjust.style.display = 'inline-flex';
+  editorState.pointers.clear();
+  editorState.drag = null;
+  editorState.pinch = null;
+}
+
+function onPointerDown(evt) {
+  evt.preventDefault();
+  cropStage.setPointerCapture(evt.pointerId);
+  const pt = clientToSource(evt);
+  editorState.pointers.set(evt.pointerId, pt);
+
+  if (editorState.pointers.size === 2) {
+    // Enter pinch mode
+    const pts = [...editorState.pointers.values()];
+    const dx = pts[1].x - pts[0].x, dy = pts[1].y - pts[0].y;
+    editorState.pinch = {
+      startBox: { ...editorState.box },
+      startDist: Math.hypot(dx, dy) || 1,
+    };
+    editorState.drag = null;
+    return;
+  }
+
+  // Single pointer — figure out what got hit
+  const target = evt.target;
+  const handleAttr = target && target.dataset ? target.dataset.handle : null;
+  if (handleAttr) {
+    editorState.drag = { type: handleAttr, startBox: { ...editorState.box }, startPt: pt };
+  } else {
+    const b = editorState.box;
+    const inside = pt.x >= b.x && pt.x <= b.x + b.w && pt.y >= b.y && pt.y <= b.y + b.h;
+    editorState.drag = { type: inside ? 'move' : 'move', startBox: { ...b }, startPt: pt };
+    if (!inside) {
+      // If user taps outside, recentre the box on the tap
+      editorState.box = clampBox(
+        { x: pt.x - b.w / 2, y: pt.y - b.h / 2, w: b.w, h: b.h },
+        cropState.sourceCanvas.width,
+        cropState.sourceCanvas.height
+      );
+      editorState.drag.startBox = { ...editorState.box };
+      drawBox();
+    }
+  }
+}
+
+function onPointerMove(evt) {
+  if (!editorState.pointers.has(evt.pointerId)) return;
+  evt.preventDefault();
+  const pt = clientToSource(evt);
+  editorState.pointers.set(evt.pointerId, pt);
+
+  const sw = cropState.sourceCanvas.width;
+  const sh = cropState.sourceCanvas.height;
+
+  if (editorState.pinch && editorState.pointers.size >= 2) {
+    const pts = [...editorState.pointers.values()];
+    const dx = pts[1].x - pts[0].x, dy = pts[1].y - pts[0].y;
+    const dist = Math.hypot(dx, dy) || 1;
+    const ratio = dist / editorState.pinch.startDist;
+    const sb = editorState.pinch.startBox;
+    const cx = sb.x + sb.w / 2, cy = sb.y + sb.h / 2;
+    const newW = sb.w / ratio, newH = sb.h / ratio; // pinch out = zoom in = smaller crop box
+    editorState.box = clampBox({ x: cx - newW / 2, y: cy - newH / 2, w: newW, h: newH }, sw, sh);
+    drawBox();
+    return;
+  }
+
+  if (!editorState.drag) return;
+  const { type, startBox, startPt } = editorState.drag;
+  const dx = pt.x - startPt.x, dy = pt.y - startPt.y;
+  let nb;
+  if (type === 'move') {
+    nb = { x: startBox.x + dx, y: startBox.y + dy, w: startBox.w, h: startBox.h };
+  } else {
+    let x = startBox.x, y = startBox.y, w = startBox.w, h = startBox.h;
+    if (type.includes('w')) { x = startBox.x + dx; w = startBox.w - dx; }
+    if (type.includes('e')) { w = startBox.w + dx; }
+    if (type.includes('n')) { y = startBox.y + dy; h = startBox.h - dy; }
+    if (type.includes('s')) { h = startBox.h + dy; }
+    if (w < MIN_BOX) { if (type.includes('w')) x = startBox.x + startBox.w - MIN_BOX; w = MIN_BOX; }
+    if (h < MIN_BOX) { if (type.includes('n')) y = startBox.y + startBox.h - MIN_BOX; h = MIN_BOX; }
+    nb = { x, y, w, h };
+  }
+  editorState.box = clampBox(nb, sw, sh);
+  drawBox();
+}
+
+function onPointerUp(evt) {
+  editorState.pointers.delete(evt.pointerId);
+  if (editorState.pointers.size < 2) editorState.pinch = null;
+  if (editorState.pointers.size === 0) editorState.drag = null;
+  try { cropStage.releasePointerCapture(evt.pointerId); } catch (_) {}
+}
+
+function onWheel(evt) {
+  evt.preventDefault();
+  const b = editorState.box;
+  const sw = cropState.sourceCanvas.width;
+  const sh = cropState.sourceCanvas.height;
+  // Zoom around the pointer so the point under the cursor stays put
+  const pt = clientToSource(evt);
+  const factor = evt.deltaY < 0 ? 0.9 : 1.1; // wheel up = zoom in = shrink box
+  const newW = b.w * factor, newH = b.h * factor;
+  const tx = (pt.x - b.x) / b.w;
+  const ty = (pt.y - b.y) / b.h;
+  const nx = pt.x - tx * newW;
+  const ny = pt.y - ty * newH;
+  editorState.box = clampBox({ x: nx, y: ny, w: newW, h: newH }, sw, sh);
+  drawBox();
+}
+
+cropStage.addEventListener('pointerdown', onPointerDown);
+cropStage.addEventListener('pointermove', onPointerMove);
+cropStage.addEventListener('pointerup', onPointerUp);
+cropStage.addEventListener('pointercancel', onPointerUp);
+cropStage.addEventListener('wheel', onWheel, { passive: false });
+window.addEventListener('resize', () => { if (!cropEditor.hidden) layoutStage(); });
+
+btnAdjust.addEventListener('click', openCropEditor);
+btnCropCancel.addEventListener('click', closeCropEditor);
+btnCropReset.addEventListener('click', () => {
+  if (!cropState.autoBox) return;
+  editorState.box = clampBox(
+    { ...cropState.autoBox },
+    cropState.sourceCanvas.width,
+    cropState.sourceCanvas.height
+  );
+  drawBox();
+});
+btnCropConfirm.addEventListener('click', async () => {
+  if (!editorState.box || !cropState.sourceCanvas) return;
+  btnCropConfirm.disabled = true;
+  btnCropCancel.disabled = true;
+  spinner.style.display = 'block';
+  try {
+    cropState.currentBox = { ...editorState.box };
+    const cropped = cropFromBox(cropState.sourceCanvas, editorState.box);
+    previewCroppedLabel.textContent = 'Manual crop';
+    await runFromCroppedCanvas(cropped, 'manual crop');
+    closeCropEditor();
+  } catch (err) {
+    console.error(err);
+    statusText.textContent = 'Prediction failed: ' + err.message;
+  } finally {
+    btnCropConfirm.disabled = false;
+    btnCropCancel.disabled = false;
+    spinner.style.display = 'none';
+  }
 });
 
 // ---- Service Worker ----
